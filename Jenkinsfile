@@ -1,57 +1,43 @@
 pipeline
 {
-    agent any
-    stages
+  agent any
+  stages
+  {
+    stage('Continuous Download')
     {
-        stage('ContinuousDownload')
-        {
-            steps
-            {
-                git 'https://github.com/intelliqittrainings/maven.git'
-            }
-        }
-        stage('ContinuousBuild')
-        {
-            steps
-            {
-                sh 'mvn package'
-            }
-        }
-        stage('ContinuousDeployment')
-        {
-            steps
-            {
-               deploy adapters: [tomcat9(credentialsId: 'bfb67f1d-2f4e-430c-bb8d-30584116bd00', path: '', url: 'http://172.31.51.212:9090')], contextPath: 'test1', war: '**/*.war'
-            }
-        }
-        stage('ContinuousTesting')
-        {
-            steps
-            {
-               git 'https://github.com/intelliqittrainings/FunctionalTesting.git'
-               sh 'java -jar /home/ubuntu/.jenkins/workspace/DeclarativePipeline1/testing.jar'
-            }
-        }
-       
+      steps
+      {
+        git 'https://github.com/intelliqittrainings/maven.git'
+      }
     }
-    
-    post
+    stage('Continuous Build')
     {
-        success
-        {
-            input message: 'Need approval from the DM!', submitter: 'srinivas'
-               deploy adapters: [tomcat9(credentialsId: 'bfb67f1d-2f4e-430c-bb8d-30584116bd00', path: '', url: 'http://172.31.50.204:9090')], contextPath: 'prod1', war: '**/*.war'
-        }
-        failure
-        {
-            mail bcc: '', body: 'Continuous Integration has failed', cc: '', from: '', replyTo: '', subject: 'CI Failed', to: 'selenium.saikrishna@gmail.com'
-        }
-       
+      steps
+      {
+        sh 'mvn package'
+      }
     }
-    
-    
-    
-    
-    
-    
+    stage('Continuous Deployment')
+    {
+      steps
+      {
+        deploy adapters: [tomcat9(credentialsId: 'fc9f595b-cd17-4c21-802d-a37db5282bd0', path: '', url: 'http://172.31.84.253:8080')], contextPath: 'testapp', war: '**/*.war'
+      }
+    }
+    stage('Continuous Testing')
+    {
+      steps
+      {
+        git 'https://github.com/intelliqittrainings/FunctionalTesting'
+        sh 'java -jar /root/.jenkins/workspace/DeclarativePipeline1/testing.jar'
+      }
+    }
+    stage('Continuous Delivery')
+    {
+      steps
+      {
+        deploy adapters: [tomcat9(credentialsId: 'fc9f595b-cd17-4c21-802d-a37db5282bd0', path: '', url: 'http://172.31.94.225:8080')], contextPath: 'prodapp', war: '**/*.war'
+      }
+    }
+   }
 }
